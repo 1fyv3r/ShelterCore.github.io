@@ -95,7 +95,7 @@
             background: radial-gradient(circle at center, #1a2235 0%, var(--bg-dark) 100%);
             text-align: center;
         }
-        #hero h1 { background: linear-gradient(90deg, #fff, var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #hero h1 { background: linear-gradient(90deg, #fff, var(--text-muted)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         #hero .subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 500; color: #fff; margin-bottom: 1.5rem; }
         #hero .desc { max-width: 600px; margin: 0 auto 3rem auto; font-size: 1.2rem; }
 
@@ -705,9 +705,9 @@
             const hoursLeft = currentEnergyWh / totalPowerW;
             
             if (heaterPct > 0) {
-                return \`Залишилось: ~\${hoursLeft.toFixed(1)} год (обігрів \${heaterPct}%)\`;
+                return `Залишилось: ~${hoursLeft.toFixed(1)} год (обігрів ${heaterPct}%)`;
             } else {
-                return \`Залишилось: ~\${Math.floor(hoursLeft)} год (тільки моніторинг)\`;
+                return `Залишилось: ~${Math.floor(hoursLeft)} год (тільки моніторинг)`;
             }
         }
 
