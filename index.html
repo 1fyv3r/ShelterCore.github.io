@@ -409,10 +409,72 @@
             #hero .desc {
                 font-size: 1rem;
             }
+            .nav-links {
+                display: none; /* Hide on mobile for simplicity */
+            }
+        }
+
+        /* --- Header --- */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            background: rgba(10, 15, 30, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-green);
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover {
+            color: var(--accent-green);
+        }
+        .nav-cta {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+        }
+        .nav-cta:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
         }
     </style>
 </head>
 <body>
+
+    <!-- Header -->
+    <header>
+        <a href="#hero" class="logo">ShelterCore</a>
+        <nav class="nav-links">
+            <a href="#problem">Проблема</a>
+            <a href="#solution">Рішення</a>
+            <a href="#demo">Демо</a>
+            <a href="#cta" class="nav-cta">Зв'язатися</a>
+        </nav>
+    </header>
 
     <!-- Блок 1: Hero -->
     <section id="hero">
@@ -467,6 +529,8 @@
                     <li>Вмикає тільки те, що потрібно прямо зараз</li>
                     <li>Сам визначає пріоритети залежно від ситуації</li>
                     <li>Не потребує жодного налаштування</li>
+                    <li><strong>Незалежна мережа сповіщень (LORA):</strong> На випадок відсутності інтернету укриття обмінюються даними через LORA. Якщо хоча б одне має зв'язок — сигнал тривоги передається іншим.</li>
+                    <li><strong>Система виживання при обвалі:</strong> Вбудовані датчики вібрації при критичному ударі автоматично надсилають SOS із точними координатами та кількістю людей в службу порятунку.</li>
                 </ul>
             </div>
         </div>
@@ -617,7 +681,7 @@
                 <button type="submit" class="btn">Хочу дізнатися першим</button>
             </form>
             <div class="footer-credits">
-                Проєкт розроблено командою [Назва команди] в рамках хакатону 2026
+                Проєкт розроблено командою HEXA в рамках хакатону 2026
             </div>
         </div>
     </section>
