@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShelterCore - Розумний менеджер живлення</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0f1e;
+            --bg-darker: #050811;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --text-main: #e8f0fe;
+            --text-muted: #8ab4f8;
+            --accent-green: #00d4aa;
+            --accent-orange: #ff6b35;
+
+            /* Demo Screen Variables */
+            --color-safe: #00d4aa;
+            --color-alert: #ff6b35;
+            --color-danger: #ea4335;
+            --color-info: #3d8ef8;
+            --color-neutral: #9aa0a6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem 2rem;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Typography */
+        h1 { font-size: clamp(3rem, 8vw, 5rem); font-weight: 800; margin-bottom: 1rem; line-height: 1.1; text-align: center; }
+        h2 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 600; margin-bottom: 2rem; text-align: center; }
+        h3 { font-size: 1.5rem; font-weight: 500; margin-bottom: 1rem; }
+        p { font-size: 1.1rem; color: var(--text-muted); }
+
+        .text-center { text-align: center; }
+        
+        /* Animations */
+        .fade-in {
+            /* Removed opacity: 0 to fix blank screen issue */
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            background: var(--accent-green);
+            color: #000;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: transform 0.2s, background 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            background: #00e8ba;
+        }
+
+        /* --- Блок 1: Hero --- */
+        #hero {
+            background: radial-gradient(circle at center, #1a2235 0%, var(--bg-dark) 100%);
+            text-align: center;
+        }
+        #hero h1 { background: linear-gradient(90deg, #fff, var(--text-muted)); background-clip: text; -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        #hero .subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); font-weight: 500; color: #fff; margin-bottom: 1.5rem; }
+        #hero .desc { max-width: 600px; margin: 0 auto 3rem auto; font-size: 1.2rem; }
+
+        /* --- Блок 2: Проблема --- */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 2.5rem 2rem;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .card-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .problem-conclusion { font-size: 1.3rem; font-weight: 500; text-align: center; color: #fff; }
+
+        /* --- Блок 3: Рішення --- */
+        .solution-split {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        @media (max-width: 768px) { .solution-split { grid-template-columns: 1fr; } }
+        
+        .schema {
+            background: var(--bg-darker);
+            padding: 3rem;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+        .schema-node {
+            background: rgba(255,255,255,0.05);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .schema-arrow { font-size: 1.5rem; color: var(--accent-green); }
+        .schema-row { display: flex; gap: 1rem; }
+        
+        .check-list { list-style: none; }
+        .check-list li {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        .check-list li::before {
+            content: '✓';
+            color: var(--accent-green);
+            font-weight: 800;
+            font-size: 1.5rem;
+            line-height: 1;
+        }
+
+        /* --- Блок 4: Головна цифра --- */
+        #number {
+            background: var(--bg-darker);
+        }
+        .huge-number {
+            font-size: clamp(4rem, 12vw, 8rem);
+            font-weight: 800;
+            color: var(--accent-green);
+            line-height: 1;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .number-subtitle {
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            color: #fff;
+            text-align: center;
+        }
+
+        /* --- Блок 5: Як це працює --- */
+        .scenario-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .scenario {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+        .scenario-icon { font-size: 3rem; }
+        .scenario-text { font-size: 1.2rem; }
+        @media (max-width: 600px) { .scenario { flex-direction: column; text-align: center; } }
+
+        /* --- Блок 5.5: Демо --- */
+        #demo {
+            background: radial-gradient(circle at center, #1a2235 0%, var(--bg-dark) 100%);
+            padding: 6rem 2rem;
+        }
+        
+        .device-container {
+            display: flex;
+            justify-content: center;
+            margin: 3rem 0;
+            width: 100%;
+        }
+
+        .screen {
+            background: #050811;
+            width: 100%;
+            max-width: 600px;
+            border-radius: 12px;
+            border: 2px solid #1a2235;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        .screen-topbar {
+            background: #000;
+            padding: 4px 12px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            border-bottom: 1px solid #1a2235;
+        }
+
+        .screen-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto auto;
+            gap: 1px;
+            background: #1a2235;
+        }
+
+        .zone {
+            background: #0a0f1e;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .zone-full {
+            grid-column: 1 / -1;
+        }
+
+        .zone-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .zone-value {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+        }
+
+        .progress-track {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 6px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--color-safe);
+            transition: width 0.5s ease, background-color 0.5s ease;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(255,255,255,0.1);
+            width: fit-content;
+        }
+
+        .safe { color: var(--color-safe); }
+        .alert { color: var(--color-alert); }
+        .danger { color: var(--color-danger); }
+        .info { color: var(--color-info); }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        @media (max-width: 500px) {
+            .screen-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- Блок 6: Для кого це --- */
+        .target-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .target-item {
+            text-align: center;
+            padding: 2rem;
+            background: var(--bg-darker);
+            border-radius: 16px;
+        }
+        @media (max-width: 600px) { .target-grid { grid-template-columns: 1fr; } }
+
+        /* --- Блок 7: Партнер --- */
+        #partner {
+            background: #fff;
+            color: #000;
+            min-height: 60vh;
+        }
+        #partner p { color: #555; max-width: 600px; margin: 0 auto; font-size: 1.2rem; font-weight: 500;}
+        .partner-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        /* --- Блок 8: CTA --- */
+        .cta-form {
+            display: flex;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 2rem auto;
+        }
+        .cta-form input {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            border: none;
+            font-size: 1.1rem;
+            outline: none;
+        }
+        .cta-form button {
+            white-space: nowrap;
+        }
+        @media (max-width: 600px) { .cta-form { flex-direction: column; } }
+        .footer-credits {
+            margin-top: 4rem;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.3);
+        }
+
+        /* --- MOBILE OPTIMIZATIONS --- */
+        @media (max-width: 768px) {
+            section {
+                padding: 3rem 1rem;
+                min-height: auto; /* Allow sections to shrink on mobile */
+            }
+            .schema {
+                padding: 1.5rem;
+                gap: 1rem;
+            }
+            .schema-row {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .card {
+                padding: 1.5rem 1rem;
+            }
+            .scenario {
+                padding: 1.5rem;
+                gap: 1rem;
+            }
+            .zone {
+                padding: 1rem;
+            }
+            .huge-number {
+                font-size: 3rem; /* Fallback for clamp */
+            }
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+            #hero .desc {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Блок 1: Hero -->
+    <section id="hero">
+        <div class="container fade-in">
+            <h1>ShelterCore</h1>
+            <div class="subtitle">Розумний менеджер живлення для укриттів</div>
+            <p class="desc">Змушує звичайні прилади працювати разом — щоб світло, тепло і повітря трималися якнайдовше</p>
+            <a href="#problem" class="btn">Дізнатися більше</a>
+        </div>
+    </section>
+
+    <!-- Блок 2: Проблема -->
+    <section id="problem">
+        <div class="container">
+            <div class="cards-grid">
+                <div class="card fade-in">
+                    <div class="card-icon">🌑</div>
+                    <h3>Темно</h3>
+                    <p>Акумулятор сідає за 90 хвилин, якщо увімкнути все одразу</p>
+                </div>
+                <div class="card fade-in" style="transition-delay: 0.2s">
+                    <div class="card-icon">🥶</div>
+                    <h3>Холодно</h3>
+                    <p>Без керування обігрів і освітлення конкурують за той самий заряд</p>
+                </div>
+                <div class="card fade-in" style="transition-delay: 0.4s">
+                    <div class="card-icon">😮‍💨</div>
+                    <h3>Душно</h3>
+                    <p>Вентилятор або не працює, або витрачає енергію даремно</p>
+                </div>
+            </div>
+            <p class="problem-conclusion fade-in" style="transition-delay: 0.6s">Це відбувається щодня в тисячах укриттів України.</p>
+        </div>
+    </section>
+
+    <!-- Блок 3: Рішення -->
+    <section id="solution">
+        <div class="container solution-split fade-in">
+            <div class="schema">
+                <div class="schema-node">🔋 Акумулятор</div>
+                <div class="schema-arrow">↓</div>
+                <div class="schema-node" style="background: var(--accent-green); color: #000;">🧠 ShelterCore</div>
+                <div class="schema-arrow">↓</div>
+                <div class="schema-row">
+                    <div class="schema-node">💡</div>
+                    <div class="schema-node">😮‍💨</div>
+                    <div class="schema-node">🔥</div>
+                </div>
+            </div>
+            <div>
+                <ul class="check-list">
+                    <li>Вмикає тільки те, що потрібно прямо зараз</li>
+                    <li>Сам визначає пріоритети залежно від ситуації</li>
+                    <li>Не потребує жодного налаштування</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Блок 4: Головна цифра -->
+    <section id="number">
+        <div class="container fade-in">
+            <div class="huge-number">1.5 год → 6+ год</div>
+            <div class="number-subtitle">Та сама батарея. Розумне керування.</div>
+        </div>
+    </section>
+
+    <!-- Блок 5: Як це працює -->
+    <section id="how-it-works">
+        <div class="container">
+            <div class="scenario-list">
+                <div class="scenario fade-in">
+                    <div class="scenario-icon">👥</div>
+                    <div class="scenario-text"><strong>Зайшло багато людей</strong> → CO₂ росте → вентилятор вмикається автоматично</div>
+                </div>
+                <div class="scenario fade-in">
+                    <div class="scenario-icon">🔋</div>
+                    <div class="scenario-text"><strong>Заряд акумулятора 30%</strong> → обігрів вимикається → світло і вентиляція залишаються</div>
+                </div>
+                <div class="scenario fade-in">
+                    <div class="scenario-icon">🌡️</div>
+                    <div class="scenario-text"><strong>Температура в нормі</strong> → обігрів не вмикається взагалі → енергія економиться</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Блок 5.5: Демо -->
+    <section id="demo">
+        <div class="container text-center fade-in">
+            <h2>Система в дії</h2>
+            <p>Так виглядає екран пристрою. Він автоматично реагує на зміни середовища в реальному часі.</p>
+            
+            <div class="device-container">
+                <div class="screen">
+                    <div class="screen-topbar">
+                        <span>● ShelterCore</span>
+                        <span>WiFi ▲ <span id="clock">12:00</span></span>
+                    </div>
+                    <div class="screen-grid">
+                        
+                        <!-- Zone 1: CO2 -->
+                        <div class="zone">
+                            <div class="zone-title">🌬️ CO₂</div>
+                            <div class="zone-value" id="co2-val">847 ppm</div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="co2-bar" style="width: 42%;"></div>
+                            </div>
+                            <div class="status-badge safe" id="co2-status">✅ НОРМА</div>
+                        </div>
+
+                        <!-- Zone 2: People -->
+                        <div class="zone">
+                            <div class="zone-title">👥 ЛЮДИ</div>
+                            <div class="flex-between">
+                                <div class="zone-value" id="people-val">23</div>
+                                <div style="color: var(--text-muted)">/ 50</div>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill info" id="people-bar" style="width: 46%; background-color: var(--color-info)"></div>
+                            </div>
+                            <div class="status-badge info" id="people-status">46% ЗАПОВНЕНОСТІ</div>
+                        </div>
+
+                        <!-- Zone 3: Temp -->
+                        <div class="zone">
+                            <div class="zone-title">🌡️ ТЕМПЕРАТУРА</div>
+                            <div class="zone-value" id="temp-val">19.2°C</div>
+                            <div class="flex-between" style="font-size: 0.8rem; margin-top: 4px;">
+                                <span id="temp-trend" class="alert">↑ +0.3°/год</span>
+                                <span style="color: var(--text-muted)">Ціль: 20°C</span>
+                            </div>
+                        </div>
+
+                        <!-- Zone 4: Heaters -->
+                        <div class="zone">
+                            <div class="zone-title">🔥 ОБІГРІВАЧІ</div>
+                            <div class="zone-value" id="heater-val">72%</div>
+                            <div class="progress-track">
+                                <div class="progress-fill alert" id="heater-bar" style="width: 72%; background-color: var(--color-alert)"></div>
+                            </div>
+                            <div class="status-badge alert" id="heater-status">🔥 АКТИВНИЙ НАГРІВ</div>
+                        </div>
+
+                        <!-- Zone 5: Battery -->
+                        <div class="zone zone-full">
+                            <div class="flex-between">
+                                <div class="zone-title">🔋 АКУМУЛЯТОР (12600 mAh)</div>
+                                <span style="font-size: 0.8rem; color: var(--text-muted)">⚡ від мережі</span>
+                            </div>
+                            
+                            <div class="flex-between">
+                                <div class="zone-value" id="bat-val">83%</div>
+                            </div>
+                            <div class="progress-track" style="height: 12px;">
+                                <div class="progress-fill safe" id="bat-bar" style="width: 83%;"></div>
+                            </div>
+                            <div style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;" id="bat-time">
+                                Залишилось: ~4 год в режимі нагрів
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Блок 6: Для кого це -->
+    <section id="target">
+        <div class="container">
+            <div class="target-grid">
+                <div class="target-item fade-in">
+                    <div class="card-icon">🏫</div>
+                    <h3>Школи та університети</h3>
+                </div>
+                <div class="target-item fade-in" style="transition-delay: 0.1s">
+                    <div class="card-icon">🏢</div>
+                    <h3>ОСББ та житлові будинки</h3>
+                </div>
+                <div class="target-item fade-in" style="transition-delay: 0.2s">
+                    <div class="card-icon">🏥</div>
+                    <h3>Лікарні та соц. заклади</h3>
+                </div>
+                <div class="target-item fade-in" style="transition-delay: 0.3s">
+                    <div class="card-icon">🛡️</div>
+                    <h3>ДСНС та цивільний захист</h3>
+                </div>
+            </div>
+            <p class="text-center fade-in" style="transition-delay: 0.4s; font-size: 1.2rem; color: #fff;">Встановлюється за кілька годин. Працює з будь-яким акумулятором.</p>
+        </div>
+    </section>
+
+    <!-- Блок 7: Партнер -->
+    <section id="partner">
+        <div class="container text-center fade-in">
+            <div class="partner-logos">
+                <span>ПРОМАВТОМАТИКА</span>
+            </div>
+            <p>Розроблено у партнерстві з компанією ПРОМАВТОМАТИКА — українським виробником акумуляторних станцій</p>
+        </div>
+    </section>
+
+    <!-- Блок 8: CTA -->
+    <section id="cta">
+        <div class="container text-center fade-in">
+            <h2>ShelterCore — Google Nest для укриття</h2>
+            <form class="cta-form" onsubmit="event.preventDefault(); alert('Дякуємо! Ви дізнаєтесь про запуск першими.');">
+                <input type="email" placeholder="Ваш Email або телефон" required>
+                <button type="submit" class="btn">Хочу дізнатися першим</button>
+            </form>
+            <div class="footer-credits">
+                Проєкт розроблено командою [Назва команди] в рамках хакатону 2026
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Smooth scroll for buttons
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.2
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    // Stop observing once animated
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // -----------------------------------------------------
+        // DEMO DASHBOARD LOGIC
+        // -----------------------------------------------------
+        let state = {
+            co2: 847,
+            people: 23,
+            temp: 19.2,
+            heaterPct: 72,
+            battery: 83
+        };
+
+        const els = {
+            clock: document.getElementById('clock'),
+            co2Val: document.getElementById('co2-val'),
+            co2Bar: document.getElementById('co2-bar'),
+            co2Status: document.getElementById('co2-status'),
+            peopleVal: document.getElementById('people-val'),
+            peopleBar: document.getElementById('people-bar'),
+            peopleStatus: document.getElementById('people-status'),
+            tempVal: document.getElementById('temp-val'),
+            tempTrend: document.getElementById('temp-trend'),
+            heaterVal: document.getElementById('heater-val'),
+            heaterBar: document.getElementById('heater-bar'),
+            heaterStatus: document.getElementById('heater-status'),
+            batVal: document.getElementById('bat-val'),
+            batBar: document.getElementById('bat-bar'),
+            batTime: document.getElementById('bat-time')
+        };
+
+        function updateClock() {
+            const now = new Date();
+            els.clock.textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        }
+
+        function calculateAutonomy(batteryPct, heaterPct) {
+            const totalEnergyWh = 279.7;
+            const currentEnergyWh = totalEnergyWh * (batteryPct / 100);
+            const heaterPowerW = 80 * (heaterPct / 100);
+            const totalPowerW = 1.2 + heaterPowerW;
+            const hoursLeft = currentEnergyWh / totalPowerW;
+            
+            if (heaterPct > 0) {
+                return `Залишилось: ~${hoursLeft.toFixed(1)} год (обігрів ${heaterPct}%)`;
+            } else {
+                return `Залишилось: ~${Math.floor(hoursLeft)} год (тільки моніторинг)`;
+            }
+        }
+
+        function updateDashboard() {
+            // Update CO2
+            els.co2Val.textContent = state.co2 + ' ppm';
+            let co2Pct = Math.min((state.co2 / 2000) * 100, 100);
+            els.co2Bar.style.width = co2Pct + '%';
+            if (state.co2 < 800) {
+                els.co2Status.className = 'status-badge safe';
+                els.co2Status.textContent = '🟢 ВІДМІННО';
+                els.co2Bar.style.backgroundColor = 'var(--color-safe)';
+            } else if (state.co2 < 1200) {
+                els.co2Status.className = 'status-badge alert';
+                els.co2Status.textContent = '🟡 НОРМА';
+                els.co2Status.style.color = 'var(--color-alert)';
+                els.co2Bar.style.backgroundColor = 'var(--color-alert)';
+            } else {
+                els.co2Status.className = 'status-badge danger';
+                els.co2Status.textContent = '🔴 НЕБЕЗПЕКА';
+                els.co2Bar.style.backgroundColor = 'var(--color-danger)';
+            }
+
+            // Update People
+            els.peopleVal.textContent = state.people;
+            let pPct = (state.people / 50) * 100;
+            els.peopleBar.style.width = pPct + '%';
+            els.peopleStatus.textContent = Math.round(pPct) + '% ЗАПОВНЕНОСТІ';
+
+            // Update Temp
+            els.tempVal.textContent = state.temp.toFixed(1) + '°C';
+            let trend = state.heaterPct > 0 ? '+0.3' : '-0.1';
+            els.tempTrend.textContent = state.heaterPct > 0 ? '↑ ' + trend + '°/год' : '↓ ' + trend + '°/год';
+            els.tempTrend.className = state.heaterPct > 0 ? 'alert' : 'info';
+
+            // Update Heater
+            els.heaterVal.textContent = state.heaterPct + '%';
+            els.heaterBar.style.width = state.heaterPct + '%';
+            if (state.heaterPct > 0) {
+                els.heaterStatus.textContent = '🔥 АКТИВНИЙ НАГРІВ';
+                els.heaterStatus.className = 'status-badge alert';
+                els.heaterBar.style.backgroundColor = 'var(--color-alert)';
+            } else {
+                els.heaterStatus.textContent = '💤 ВИМКНЕНО';
+                els.heaterStatus.className = 'status-badge neutral';
+                els.heaterStatus.style.color = 'var(--color-neutral)';
+                els.heaterBar.style.backgroundColor = 'var(--color-neutral)';
+            }
+
+            // Update Battery
+            els.batVal.textContent = state.battery.toFixed(1) + '%';
+            els.batBar.style.width = state.battery + '%';
+            els.batTime.textContent = calculateAutonomy(state.battery, state.heaterPct);
+            if(state.battery < 20) {
+                els.batBar.style.backgroundColor = 'var(--color-danger)';
+            } else {
+                els.batBar.style.backgroundColor = 'var(--color-safe)';
+            }
+        }
+
+        function simulateData() {
+            state.co2 += Math.floor(Math.random() * 21) - 10; 
+            if(state.co2 < 400) state.co2 = 400;
+            
+            if (Math.random() > 0.7) {
+                state.people += Math.floor(Math.random() * 3) - 1;
+                if(state.people < 0) state.people = 0;
+                if(state.people > 50) state.people = 50;
+            }
+
+            if (state.heaterPct > 0) {
+                state.temp += 0.1;
+                if (state.temp > 20) {
+                    state.heaterPct = 0; 
+                }
+            } else {
+                state.temp -= 0.05;
+                if (state.temp < 18) {
+                    state.heaterPct = Math.floor(Math.random() * 40) + 40; 
+                }
+            }
+
+            state.battery -= 0.1;
+            if(state.battery < 0) state.battery = 0;
+
+            updateDashboard();
+            updateClock();
+        }
+
+        // Init Demo
+        updateClock();
+        updateDashboard();
+        setInterval(simulateData, 15000);
+        setInterval(updateClock, 60000);
+    </script>
+</body>
+</html>
